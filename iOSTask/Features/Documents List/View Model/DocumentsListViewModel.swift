@@ -100,7 +100,7 @@ class DocumentsListViewModel: BaseViewModel, DocumentsListViewModelProtocol {
                 switch response {
                 case let .success(documentsResponse):
                     self.handlePagination(result: documentsResponse)
-                case let .failure(error):
+                case .failure:
                     if !Utils.isConnectedToNetwork() {
                         self.errorsObservable.value = .networkError
                     } else {
