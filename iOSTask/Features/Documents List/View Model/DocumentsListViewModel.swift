@@ -9,10 +9,11 @@ import Foundation
 
 // MARK: - View Model Inputs
 protocol DocumentsListViewModelInput {
-    func didSearch(searchCriteria: SearchCriteria)
+    func validateSearchParameters(searchCriteria: SearchCriteria)
     func didLoadNextPage()
     func didSelectItem(at index: Int)
-    func didChangeSearchQuery()
+    func didChangeSearchQuery(searchBarText: String)
+    func didSubmitSearch(searchBarText: String)
 }
 
 // MARK: - View Model Outputs
@@ -36,40 +37,20 @@ class DocumentsListViewModel: BaseViewModel, DocumentsListViewModelProtocol {
     
     var searchCriteria: SearchCriteria = .searchByQuery(q: "")
     
-    func getDocuments(searchCriteria: SearchCriteria, loading: PaginationOptions) {
-        
-        if Utils.isConnectedToNetwork() {
-            if page == 1 {
-                // Show loading in first page only
-                self.isActivityIndicatorHidden.value = false
-            }
-            self.paginationOption.value = loading
-            print("Value: Loading")
-            self.screenStatus.value = .loading
-            
-            let searchParameters = SearchParameters(searchCriteria: searchCriteria)
-            provider?.request(type: DocumentsResponse.self,
-                              service: DocumentsService.getDocuments(parameters: searchParameters,
-                                                                     page: self.page)) { [weak self] response in
-                guard let self = self else { return }
-                self.paginationOption.value = .none
-                print("Value: None")
-                self.isActivityIndicatorHidden.value = true
-                switch response {
-                case let .success(documentsResponse):
-                    print("success network")
-                    self.handlePagination(result: documentsResponse)
-                case let .failure(error):
-                    print(error)
-                }
-            }
-        } else {
-            self.errorsObservable.value = .networkError
-            
+    
+    func didSubmitSearch(searchBarText: String) {
+        switch searchCriteria {
+        case .searchByQuery:
+            self.validateSearchParameters(searchCriteria: .searchByQuery(q: searchBarText))
+        case .searchByAuthorName:
+            self.validateSearchParameters(searchCriteria: .searchByAuthorName(authorName: searchBarText))
+        case .searchByDocumentTitle:
+            self.validateSearchParameters(searchCriteria: .searchByDocumentTitle(documentTitle: searchBarText))
         }
     }
     
-    func didSearch(searchCriteria: SearchCriteria) {
+    // Validate search parameters before setup search request
+    func validateSearchParameters(searchCriteria: SearchCriteria) {
         print("did Search")
         switch searchCriteria {
         case .searchByQuery(let query):
@@ -93,26 +74,60 @@ class DocumentsListViewModel: BaseViewModel, DocumentsListViewModelProtocol {
         self.setupSearchRquest(searchCriteria: searchCriteria)
     }
     
+    // Setup search request before calling API
     func setupSearchRquest(searchCriteria: SearchCriteria) {
         self.provider?.cancelAllRequests()
         self.resetPages()
         self.getDocuments(searchCriteria: searchCriteria, loading: .firstPage)
     }
     
+    // Calling documents API
+    func getDocuments(searchCriteria: SearchCriteria, loading: PaginationOptions) {
+        
+        if Utils.isConnectedToNetwork() {
+            if page == 1 {
+                // Show loading in first page only
+                self.isActivityIndicatorHidden.value = false
+            }
+            self.paginationOption.value = loading
+            print("Value: Loading")
+            self.screenStatus.value = .loading
+            
+            let searchParameters = SearchParameters(searchCriteria: searchCriteria)
+            provider?.request(type: DocumentsResponse.self,
+                              service: DocumentsService.getDocuments(parameters: searchParameters,
+                                                                     page: self.page,
+                                                                     limit: self.limit)) { [weak self] response in
+                guard let self = self else { return }
+                self.paginationOption.value = .none
+                print("Value: None")
+                self.isActivityIndicatorHidden.value = true
+                switch response {
+                case let .success(documentsResponse):
+                    print("success network")
+                    self.handlePagination(result: documentsResponse)
+                case let .failure(error):
+                    print(error)
+                    if !Utils.isConnectedToNetwork() {
+                        self.errorsObservable.value = .networkError
+                    } else {
+                        self.errorsObservable.value = .generalError
+                    }
+                }
+            }
+        } else {
+            self.errorsObservable.value = .networkError
+            
+        }
+    }
+
     func didLoadNextPage() {
         print("did load next page")
         guard hasMorePages, paginationOption.value == .none else { return }
         getDocuments(searchCriteria: searchCriteria, loading: .nextPage)
     }
     
-    func didSelectItem(at index: Int) {
-        if self.documents.value.indices.contains(index) {
-            // Navigate to document detals
-            self.redirection.value = .documentDetails(doucment: self.documents.value[index])
-        }
-    }
-    
-    private func handlePagination(result: DocumentsResponse) {
+    func handlePagination(result: DocumentsResponse) {
         var documents = self.documents.value
         
         if( result.docs.isEmpty && documents.isEmpty) {
@@ -125,25 +140,38 @@ class DocumentsListViewModel: BaseViewModel, DocumentsListViewModelProtocol {
             self.page += 1
         }
         
-        //Indicate no more data
+        // Indicate no more data
         self.hasMorePages = (result.numFound > documents.count)
     }
     
-    private func resetPages() {
+    func resetPages() {
         page = 1
         hasMorePages = true
         documents.value.removeAll()
     }
     
-    //To change search criteria when back from document details or when enter new value in search bar
-    func changeSearchCriteria(criteia: SearchCriteria?) {
+    // To change search criteria when back from document details or when enter new value in search bar
+    func didChangeSearchCriteria(criteia: SearchCriteria?) {
         if let criteia = criteia {
-            didSearch(searchCriteria: criteia)
+            validateSearchParameters(searchCriteria: criteia)
         }
     }
     
-    //Called when user enter new value in search bar, so we reset data
-    func didChangeSearchQuery() {
+    // Called when user enter new value in search bar, so we reset data, and back to the default search criteria only when user clear all text in search bar (Can be changed according to the requirements )
+    func didChangeSearchQuery(searchBarText: String) {
         self.resetPages()
+        if searchBarText.isEmpty {
+            self.searchCriteria = .searchByQuery(q: "")
+        }
+    }
+}
+
+// Responsible for Redirection
+extension DocumentsListViewModel {
+    func didSelectItem(at index: Int) {
+        if self.documents.value.indices.contains(index) {
+            // Navigate to document detals
+            self.redirection.value = .documentDetails(doucment: self.documents.value[index])
+        }
     }
 }

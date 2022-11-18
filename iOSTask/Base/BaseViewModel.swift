@@ -16,6 +16,7 @@ protocol BaseViewModelOutput {
 class BaseViewModel: BaseViewModelOutput {
     
     var page = 1
+    var limit = 10
     var hasMorePages: Bool = false
     let isActivityIndicatorHidden: Observable<Bool> = Observable(true)
     let errorsObservable: Observable<NetworkError?> = Observable(nil)

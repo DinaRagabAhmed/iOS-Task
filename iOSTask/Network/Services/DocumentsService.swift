@@ -9,7 +9,7 @@ import Foundation
 
 enum DocumentsService: ServiceProtocol {
     
-    case getDocuments(parameters: SearchParameters, page: Int)
+    case getDocuments(parameters: SearchParameters, page: Int, limit: Int)
     
     var baseURL: URL {
         return URL(string: Environment.baseURL)!
@@ -31,10 +31,10 @@ enum DocumentsService: ServiceProtocol {
     
     var task: Task {
         switch self {
-        case .getDocuments(let searchParameters, let page):
+        case .getDocuments(let searchParameters, let page, let limit):
             var parameters = searchParameters.getQueryParameters()
             parameters["page"] = page
-            parameters["limit"] = 10
+            parameters["limit"] = limit
             print(parameters)
             return .requestParameters(parameters)
         }

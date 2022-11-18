@@ -146,14 +146,16 @@ extension DocumentsListVC: UISearchBarDelegate {
     func search() {
         guard let searchText = searchBar.text else { return }
         self.view.endEditing(true)
-        viewModel.didSearch(searchCriteria: .searchByQuery(q: searchText))
+        // It will save search criteria (author name, document title, query) and change only text
+        // Back to query only when user remove all text in search bar
+        viewModel.didSubmitSearch(searchBarText: searchText)
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         //Hide no data when user changes text
         self.noDataView.isHidden = true
         // Remove all data when user changes text in search bar
-        self.viewModel.didChangeSearchQuery()
+        self.viewModel.didChangeSearchQuery(searchBarText: searchText)
     }
 }
 

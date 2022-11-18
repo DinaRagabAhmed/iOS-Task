@@ -57,7 +57,7 @@ extension DocumentListCoordinator {
         
         // Observe if user click on document name or author name to render documents list with the new search criteria
         documentDetailsCoordinator.searchCriteria.observe(on: documentDetailsCoordinator){[weak viewModel] newCriteria in
-            viewModel?.changeSearchCriteria(criteia: newCriteria)
+            viewModel?.didChangeSearchCriteria(criteia: newCriteria)
         }
         
         documentDetailsCoordinator.start()
