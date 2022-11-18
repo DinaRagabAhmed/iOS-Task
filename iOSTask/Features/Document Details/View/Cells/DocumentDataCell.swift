@@ -50,6 +50,7 @@ class DocumentDataCell: UITableViewCell {
     }
 
     @objc func didSelectAuthorName(sender: UITapGestureRecognizer) {
+        // Assumption: when user click on it in details, user will search with only first name in array, it can be changed according to the requirements
         didSelectNewSearchCriteria(criteria: .searchByAuthorName(authorName: self.document.authorName?.first ?? ""))
     }
     

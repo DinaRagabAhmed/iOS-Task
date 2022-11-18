@@ -51,7 +51,6 @@ class DocumentsListViewModel: BaseViewModel, DocumentsListViewModelProtocol {
     
     // Validate search parameters before setup search request
     func validateSearchParameters(searchCriteria: SearchCriteria) {
-        print("did Search")
         switch searchCriteria {
         case .searchByQuery(let query):
             if query.isEmpty {
@@ -61,13 +60,11 @@ class DocumentsListViewModel: BaseViewModel, DocumentsListViewModelProtocol {
             }
         case .searchByAuthorName(let authorName):
             guard !authorName.isEmpty else { return }
-            print("update search bar")
-            self.query.value = authorName
+            self.query.value = authorName // Update search bae with author name
             
         case .searchByDocumentTitle(let documentTitle):
             guard !documentTitle.isEmpty else { return }
-            print("update search bar")
-            self.query.value = documentTitle
+            self.query.value = documentTitle // Update search bae with document title
         }
         
         self.searchCriteria = searchCriteria
@@ -90,7 +87,6 @@ class DocumentsListViewModel: BaseViewModel, DocumentsListViewModelProtocol {
                 self.isActivityIndicatorHidden.value = false
             }
             self.paginationOption.value = loading
-            print("Value: Loading")
             self.screenStatus.value = .loading
             
             let searchParameters = SearchParameters(searchCriteria: searchCriteria)
@@ -100,14 +96,11 @@ class DocumentsListViewModel: BaseViewModel, DocumentsListViewModelProtocol {
                                                                      limit: self.limit)) { [weak self] response in
                 guard let self = self else { return }
                 self.paginationOption.value = .none
-                print("Value: None")
                 self.isActivityIndicatorHidden.value = true
                 switch response {
                 case let .success(documentsResponse):
-                    print("success network")
                     self.handlePagination(result: documentsResponse)
                 case let .failure(error):
-                    print(error)
                     if !Utils.isConnectedToNetwork() {
                         self.errorsObservable.value = .networkError
                     } else {
@@ -122,7 +115,6 @@ class DocumentsListViewModel: BaseViewModel, DocumentsListViewModelProtocol {
     }
 
     func didLoadNextPage() {
-        print("did load next page")
         guard hasMorePages, paginationOption.value == .none else { return }
         getDocuments(searchCriteria: searchCriteria, loading: .nextPage)
     }

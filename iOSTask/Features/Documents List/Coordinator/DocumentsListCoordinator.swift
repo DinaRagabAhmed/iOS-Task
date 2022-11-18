@@ -31,7 +31,6 @@ class DocumentListCoordinator: BaseCoordinator {
             if let redirection = redirection {
                 switch redirection {
                 case .documentDetails(let document):
-                    print("documentDetails")
                     self.redirectToDocumentDetails(document: document, viewModel: viewModel)
                 }
             }

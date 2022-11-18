@@ -35,7 +35,6 @@ enum DocumentsService: ServiceProtocol {
             var parameters = searchParameters.getQueryParameters()
             parameters["page"] = page
             parameters["limit"] = limit
-            print(parameters)
             return .requestParameters(parameters)
         }
     }
