@@ -21,7 +21,7 @@ class DocumentsListVC: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupSearchBar()
+        setUI()
         setupBinding()
         setupTableView()
     }
