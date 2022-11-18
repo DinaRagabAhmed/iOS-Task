@@ -1,0 +1,12 @@
+//
+//  Config.xcconfig
+//  iOSTask
+//
+//  Created by Dina Ragab on 16/11/2022.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+BASE_URL = openlibrary.org/
+IMAGES_URL = covers.openlibrary.org/b/isbn/

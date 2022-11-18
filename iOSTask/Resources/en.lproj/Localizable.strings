@@ -1,0 +1,16 @@
+/* 
+  Localizable.strings
+  iOSTask
+
+  Created by Dina Ragab on 16/11/2022.
+  
+*/
+
+"networkError" = "No Network Connection";
+"generalError" = "Something went wrong";
+"search" = "Search";
+"searchEmptyError" = "Please add Search query";
+"authors" = "Authors: ";
+"ISBNs" = "ISBNs:";
+"missing_info" = "Info not found";
+"noData" = "NO DATA";
